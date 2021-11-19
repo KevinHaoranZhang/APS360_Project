@@ -2,6 +2,7 @@
 from typing import Tuple
 
 from torch.nn.modules.module import T
+from torchvision import transforms
 import dataprocessor
 import simplemodel
 
@@ -25,9 +26,7 @@ def get_accuracy(model, data_loader):
   accuracy = correct / total
   return accuracy
 
-def train(model, training_dataset, validation_dataset, batch_size=64, learning_rate=0.001, num_epochs=1):
-  training_loader = torch.utils.data.DataLoader(training_dataset, batch_size=batch_size, num_workers=1, shuffle=True)
-  validation_loader = torch.utils.data.DataLoader(validation_dataset, batch_size=batch_size, num_workers=1, shuffle=True)
+def train(model, training_loader, validation_loader, batch_size=64, learning_rate=0.001, num_epochs=1):
   # Softmax activation applied internally
   criterion = nn.CrossEntropyLoss()
   optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
@@ -78,8 +77,11 @@ def train(model, training_dataset, validation_dataset, batch_size=64, learning_r
 
 if __name__ == "__main__":
     simple_model = simplemodel.Model()
-    mnist_train, mnist_val, mnist_test = dataprocessor.get_dataset_digits()
-    emnist_train, emnist_val, emnist_test = dataprocessor.get_dataset_letters()
-    train_dataset = torch.utils.data.ConcatDataset([mnist_train, emnist_train])
-    val_dataset = torch.utils.data.ConcatDataset([mnist_val, emnist_val])
-    train(simple_model, train_dataset, val_dataset, batch_size=64, learning_rate=0.01, num_epochs=6)
+    data_augmentation = []
+    data_augmentation.append(dataprocessor.DATA_AUGMENTATION["GRAY_SCALE"])
+    data_augmentation.append(dataprocessor.DATA_AUGMENTATION["TO_TENSOR"])
+    data_augmentation.append(dataprocessor.DATA_AUGMENTATION["RESIZE"])
+    # train_loader, val_loader, test_loader = dataprocessor.get_dataset_loaders(batch_size=64, display=True, transform_symbols=transforms.Compose(data_augmentation))
+    train_loader, val_loader, test_loader = dataprocessor.get_dataset_loaders(batch_size=64, display=False, transform_symbols=transforms.Compose(data_augmentation))
+    train(simple_model, train_loader, val_loader, batch_size=64, learning_rate=0.01, num_epochs=6)
+ 

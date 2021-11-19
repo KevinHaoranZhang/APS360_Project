@@ -1,6 +1,7 @@
 # Project specific directories
 data/
 model*
+math_symbol_data/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

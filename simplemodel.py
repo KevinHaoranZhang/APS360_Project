@@ -18,7 +18,7 @@ class Model(nn.Module):
         # output will be 5 * 5
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 36)
+        self.fc3 = nn.Linear(84, 56)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -28,3 +28,4 @@ class Model(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
