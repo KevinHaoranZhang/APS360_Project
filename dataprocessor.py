@@ -5,15 +5,25 @@ import torch
 import string
 import subprocess
 
+digits_label_mapping = dict(zip(range(0, 10), range(20, 30)))
+letters_label_mapping = dict(zip(list(string.ascii_uppercase), range(30, 56)))
+symbols_label_mapping = dict(zip(["add", "div", "eq", "lb", "rb", "sub"], range(0, 7)))
+
+label_mapping_dict = {"digits_label_mapping": digits_label_mapping,
+                "letters_label_mapping": letters_label_mapping,
+                "symbols_label_mapping": symbols_label_mapping
+}
+
 # Data augmentation dictonary
 DATA_AUGMENTATION = {
     "CENTER_CROP": transforms.CenterCrop(size=0.5),
     "GRAY_SCALE" : transforms.Grayscale(num_output_channels=1),
-    "HORIZONTAL_FLIP" : transforms.RandomHorizontalFlip(p=0.5),
-    "RANDOM_ROTATION": transforms.RandomRotation(degrees=15),
+    "HORIZONTAL_FLIP" : transforms.RandomHorizontalFlip(p=1),
+    "RIGHT_ROTATION": transforms.RandomRotation(degrees=[89,91]),
     "RESIZE": transforms.Resize((28, 28)),
     "TO_TENSOR" : transforms.ToTensor(),
-    "VERTICAL_FLIP" : transforms.RandomVerticalFlip(p=0.5),
+    "VERTICAL_FLIP" : transforms.RandomVerticalFlip(p=1),
+    "INVERT_COLOR": transforms.RandomInvert(p=1)
 }
 
 def get_dataset_digits(transform=transforms.Compose([transforms.ToTensor()])):
@@ -109,6 +119,19 @@ def get_dataset_loaders(batch_size=64, display=False, extract_symbol=False, tran
             plt.imshow(symbols_display_dic[i].reshape(28, 28))
             ax.set_title(symbols_decoder[i])
         plt.show()
+        label_train_list = [3850, 3850, 3850, 3850, 3850, 3850, 4929, 5672, 4984, 5128, 4861, 4531, 4908, 5216, 4797, 4974, 4028, 4005, 3989, 3964, 4006, 3971, 3989, 3964, 4028, 3967, 3997, 3985, 3970, 3981, 4062, 4010, 3994, 4024, 3973, 3999, 4002, 3998, 4018, 4020, 4021, 4035]
+        label_val_list = [825, 825, 825, 825, 825, 825, 994, 1070, 974, 1003, 981, 890, 1010, 1049, 1054, 975, 772, 795, 811, 836, 794, 829, 811, 836, 772, 833, 803, 815, 830, 819, 738, 790, 806, 776, 827, 801, 798, 802, 782, 780, 779, 765]
+        label_test_list = [825, 825, 825, 825, 825, 825, 980, 1135, 1032, 1010, 982, 892, 958, 1028, 974, 1009, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800]
+        lable_list = ["add", "div", "eq", "lb", "rb", "sub", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+        train_lable_dict = dict(zip(lable_list, label_train_list))
+        val_lable_dict = dict(zip(lable_list, label_val_list))
+        test_lable_dict = dict(zip(lable_list, label_test_list))
+        plt.bar(*zip(*train_lable_dict.items()))
+        plt.show()
+        plt.bar(*zip(*val_lable_dict.items()))
+        plt.show()
+        plt.bar(*zip(*test_lable_dict.items()))
+        plt.show()
 
     # Concatenate dataset together into training, validation, and testing datasets
     train_dataset = torch.utils.data.ConcatDataset([mnist_train, emnist_train, symbol_train])
@@ -126,12 +149,9 @@ def get_dataset_loaders(batch_size=64, display=False, extract_symbol=False, tran
     print(f"Digits dataset: training size ({len(mnist_train)} {len(mnist_train) / digits_dataset_total * 100:.2f}%) validation size ({len(mnist_val)} {len(mnist_val) / digits_dataset_total * 100:.2f}%) testing size ({len(mnist_test)} {len(mnist_test) / digits_dataset_total * 100:.2f}%)")
     print(f"Letters dataset: training size ({len(emnist_train)} {len(emnist_train) / letters_dataset_total * 100:.2f}%) validation size ({len(emnist_val)} {len(emnist_val) / letters_dataset_total * 100:.2f}%) testing size ({len(emnist_test)} {len(emnist_test) / letters_dataset_total * 100:.2f}%)")
     print(f"Symbols dataset: training size ({len(symbol_train)} {len(symbol_train) / symbols_dataset_total * 100:.2f}%) validation size ({len(symbol_val)} {len(symbol_val) / symbols_dataset_total * 100:.2f}%) testing size ({len(symbol_test)} {len(symbol_test) / symbols_dataset_total * 100:.2f}%)")
-    digits_label_mapping = dict(zip(range(0, 10), range(20, 30)))
-    letters_label_mapping = dict(zip(list(string.ascii_uppercase), range(30, 56)))
-    symbols_label_mapping = dict(zip(["add", "div", "eq", "lb", "rb", "sub"], range(0, 7)))
-    print(f"Digits Label Mapping {digits_label_mapping}")
-    print(f"Letters Label Mapping {letters_label_mapping}")
-    print(f"Symbols Label Mapping {symbols_label_mapping}")
+    print(f"Digits Label Mapping {label_mapping_dict['digits_label_mapping']}")
+    print(f"Letters Label Mapping {label_mapping_dict['letters_label_mapping']}")
+    print(f"Symbols Label Mapping {label_mapping_dict['symbols_label_mapping']}")
     print("------------------------------------------")
     return train_loader, val_loader, test_loader
 
