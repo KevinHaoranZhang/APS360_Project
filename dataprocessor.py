@@ -26,7 +26,12 @@ DATA_AUGMENTATION = {
     "INVERT_COLOR": transforms.RandomInvert(p=1)
 }
 
-def get_dataset_digits(transform=transforms.Compose([transforms.ToTensor()])):
+# Extract data from math_symbol_data.zip
+def extract_dataset():
+    print("[DataProcessing] Unzipping math symbols from Math Symbol dataset")
+    subprocess.Popen(["sh", "data_extractor.sh"]).wait()
+
+def get_all_digits_dataset(transform=transforms.Compose([transforms.ToTensor()])):
     mnist_train = datasets.MNIST('data', train=True, download=True, transform=transform)
     mnist_test = datasets.MNIST('data', train=False, download=True, transform=transform)
     mnist_train.targets[mnist_train.targets >= 0] = mnist_train.targets[mnist_train.targets >= 0] + 20
@@ -34,7 +39,7 @@ def get_dataset_digits(transform=transforms.Compose([transforms.ToTensor()])):
     mnist_train, mnist_val = torch.utils.data.random_split(mnist_train, [50000, 10000])
     return mnist_train, mnist_val, mnist_test
 
-def get_dataset_letters(transform=transforms.Compose([transforms.ToTensor()])):
+def get_all_letters_dataset(transform=transforms.Compose([transforms.ToTensor()])):
     emnist_train = datasets.EMNIST('data', split="letters", train=True, download=True, transform=transform)
     emnist_test = datasets.EMNIST('data', split="letters", train=False, download=True, transform=transform)
     emnist_train.targets[emnist_train.targets > 0] = emnist_train.targets[emnist_train.targets > 0] + 29
@@ -42,7 +47,7 @@ def get_dataset_letters(transform=transforms.Compose([transforms.ToTensor()])):
     emnist_train, emnist_val = torch.utils.data.random_split(emnist_train, [104000, 20800])
     return emnist_train, emnist_val, emnist_test
 
-def get_dataset_symbols(transform=transforms.Compose([transforms.ToTensor()])):
+def get_all_symbols_dataset(transform=transforms.Compose([transforms.ToTensor()])):
     symbol_train = datasets.ImageFolder("math_symbol_data/training_dataset", transform=transform)
     symbol_val = datasets.ImageFolder("math_symbol_data/validation_dataset", transform=transform)
     symbol_test = datasets.ImageFolder("math_symbol_data/testing_dataset", transform=transform)
@@ -51,24 +56,20 @@ def get_dataset_symbols(transform=transforms.Compose([transforms.ToTensor()])):
 # Parameters
 # batch_size: the batch size for dataloader
 # display: to show data samples
-# extract_symbol: to extract data from math_symbol_data.zip, first time use -> set to True, later user -> set to False
 # transform_digits: data augmentation on digits dataset
 # transform_letters: data augmentation on letters dataset
 # transform_symbols: data augmentation on symbols dataset
-def get_dataset_loaders(batch_size=64, display=False, extract_symbol=False, transform_digits=transforms.Compose([transforms.ToTensor()]), transform_letters=transforms.Compose([transforms.ToTensor()]), transform_symbols=transforms.Compose([transforms.ToTensor()])):
-    print(f"[DataProcessing] Initiate: batch size ({batch_size})")
+def get_all_dataset_loaders(batch_size=64, display=False, transform_digits=transforms.Compose([transforms.ToTensor()]), transform_letters=transforms.Compose([transforms.ToTensor()]), transform_symbols=transforms.Compose([transforms.ToTensor()])):
+    print(f"[DataProcessing][All] Initiate: batch size ({batch_size})")
     print(f"[DataProcessing][Data Augmentation][Digits] ({transform_digits})")
     print(f"[DataProcessing][Data Augmentation][Letters] ({transform_letters})")
     print(f"[DataProcessing][Data Augmentation][Symbols] ({transform_symbols})")
     print("[DataProcessing] Loading digits from MNIST dataset")
-    mnist_train, mnist_val, mnist_test = get_dataset_digits(transform=transform_digits)
+    mnist_train, mnist_val, mnist_test = get_all_digits_dataset(transform=transform_digits)
     print("[DataProcessing] Loading letters from EMNIST dataset")
-    emnist_train, emnist_val, emnist_test = get_dataset_letters(transform=transform_letters)
+    emnist_train, emnist_val, emnist_test = get_all_letters_dataset(transform=transform_letters)
     print("[DataProcessing] Loading symbols from Math Symbol dataset")
-    if extract_symbol:
-        print("[DataProcessing] Unzipping math symbols from Math Symbol dataset")
-        subprocess.Popen(["sh", "data_extractor.sh"]).wait()
-    symbol_train, symbol_val, symbol_test = get_dataset_symbols(transform=transform_symbols)
+    symbol_train, symbol_val, symbol_test = get_all_symbols_dataset(transform=transform_symbols)
 
     # Display data samples
     if display:
@@ -155,3 +156,126 @@ def get_dataset_loaders(batch_size=64, display=False, extract_symbol=False, tran
     print("------------------------------------------")
     return train_loader, val_loader, test_loader
 
+def get_classify_digits_dataset(transform=transforms.Compose([transforms.ToTensor()])):
+    mnist_train = datasets.MNIST('data', train=True, download=True, transform=transform)
+    mnist_test = datasets.MNIST('data', train=False, download=True, transform=transform)
+    mnist_train.targets[mnist_train.targets >= 0] = 1
+    mnist_test.targets[mnist_test.targets >= 0] = 1
+    mnist_train, mnist_val = torch.utils.data.random_split(mnist_train, [50000, 10000])
+    return mnist_train, mnist_val, mnist_test
+
+def get_classify_letters_dataset(transform=transforms.Compose([transforms.ToTensor()])):
+    emnist_train = datasets.EMNIST('data', split="letters", train=True, download=True, transform=transform)
+    emnist_test = datasets.EMNIST('data', split="letters", train=False, download=True, transform=transform)
+    emnist_train.targets[emnist_train.targets > 0] = 2
+    emnist_test.targets[emnist_test.targets > 0] = 2
+    emnist_train, emnist_val = torch.utils.data.random_split(emnist_train, [104000, 20800])
+    return emnist_train, emnist_val, emnist_test
+
+def get_classify_symbols_dataset(transform=transforms.Compose([transforms.ToTensor()])):
+    symbol_train = datasets.ImageFolder("math_symbol_data/training_dataset_rapper", transform=transform)
+    symbol_val = datasets.ImageFolder("math_symbol_data/validation_dataset_rapper", transform=transform)
+    symbol_test = datasets.ImageFolder("math_symbol_data/testing_dataset_rapper", transform=transform)
+    return symbol_train, symbol_val, symbol_test
+
+def get_classify_dataset_loaders(batch_size=64, display=False, transform_digits=transforms.Compose([transforms.ToTensor()]), transform_letters=transforms.Compose([transforms.ToTensor()]), transform_symbols=transforms.Compose([transforms.ToTensor()])):
+    print(f"[DataProcessing][Classify] Initiate: batch size ({batch_size})")
+    print(f"[DataProcessing][Data Augmentation][Digits] ({transform_digits})")
+    print(f"[DataProcessing][Data Augmentation][Letters] ({transform_letters})")
+    print(f"[DataProcessing][Data Augmentation][Symbols] ({transform_symbols})")
+    print("[DataProcessing] Loading digits from MNIST dataset")
+    mnist_train, mnist_val, mnist_test = get_classify_digits_dataset(transform=transform_digits)
+    print("[DataProcessing] Loading letters from EMNIST dataset")
+    emnist_train, emnist_val, emnist_test = get_classify_letters_dataset(transform=transform_letters)
+    print("[DataProcessing] Loading symbols from Math Symbol dataset")
+    symbol_train, symbol_val, symbol_test = get_classify_symbols_dataset(transform=transform_symbols)
+    # Concatenate dataset together into training, validation, and testing datasets
+    train_dataset = torch.utils.data.ConcatDataset([mnist_train, emnist_train, symbol_train])
+    val_dataset = torch.utils.data.ConcatDataset([mnist_val, emnist_val, symbol_val])
+    test_dataset = torch.utils.data.ConcatDataset([mnist_test, emnist_test, symbol_test])
+    # Load the dataset
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, num_workers=1, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, num_workers=1, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, num_workers=1, shuffle=True)
+    print("[DataProcessing] Complete")
+    print("----------Data Processing Report----------")
+    digits_dataset_total = len(mnist_train) + len(mnist_val) + len(mnist_test)
+    letters_dataset_total = len(emnist_train) + len(emnist_val) + len(emnist_test)
+    symbols_dataset_total = len(symbol_train) + len(symbol_val) + len(symbol_test)
+    print(f"Digits dataset: training size ({len(mnist_train)} {len(mnist_train) / digits_dataset_total * 100:.2f}%) validation size ({len(mnist_val)} {len(mnist_val) / digits_dataset_total * 100:.2f}%) testing size ({len(mnist_test)} {len(mnist_test) / digits_dataset_total * 100:.2f}%)")
+    print(f"Letters dataset: training size ({len(emnist_train)} {len(emnist_train) / letters_dataset_total * 100:.2f}%) validation size ({len(emnist_val)} {len(emnist_val) / letters_dataset_total * 100:.2f}%) testing size ({len(emnist_test)} {len(emnist_test) / letters_dataset_total * 100:.2f}%)")
+    print(f"Symbols dataset: training size ({len(symbol_train)} {len(symbol_train) / symbols_dataset_total * 100:.2f}%) validation size ({len(symbol_val)} {len(symbol_val) / symbols_dataset_total * 100:.2f}%) testing size ({len(symbol_test)} {len(symbol_test) / symbols_dataset_total * 100:.2f}%)")
+    print(f"Digits Label Mapping to 1")
+    print(f"Letters Label Mapping to 2")
+    print(f"Symbols Label Mapping to 0")
+    print("------------------------------------------")
+    return train_loader, val_loader, test_loader
+
+def get_digits_dataset(transform=transforms.Compose([transforms.ToTensor()])):
+    mnist_train = datasets.MNIST('data', train=True, download=True, transform=transform)
+    mnist_test = datasets.MNIST('data', train=False, download=True, transform=transform)
+    mnist_train, mnist_val = torch.utils.data.random_split(mnist_train, [50000, 10000])
+    return mnist_train, mnist_val, mnist_test
+
+def get_letters_dataset(transform=transforms.Compose([transforms.ToTensor()])):
+    emnist_train = datasets.EMNIST('data', split="letters", train=True, download=True, transform=transform)
+    emnist_test = datasets.EMNIST('data', split="letters", train=False, download=True, transform=transform)
+    emnist_train, emnist_val = torch.utils.data.random_split(emnist_train, [104000, 20800])
+    return emnist_train, emnist_val, emnist_test
+
+def get_symbols_dataset(transform=transforms.Compose([transforms.ToTensor()])):
+    symbol_train = datasets.ImageFolder("math_symbol_data/training_dataset", transform=transform)
+    symbol_val = datasets.ImageFolder("math_symbol_data/validation_dataset", transform=transform)
+    symbol_test = datasets.ImageFolder("math_symbol_data/testing_dataset", transform=transform)
+    return symbol_train, symbol_val, symbol_test
+
+def get_digits_dataset_loader(batch_size=64, transform_digits=transforms.Compose([transforms.ToTensor()])):
+    print(f"[DataProcessing][Digits] Initiate: batch size ({batch_size})")
+    print(f"[DataProcessing][Data Augmentation][Digits] ({transform_digits})")
+    print("[DataProcessing] Loading digits from MNIST dataset")
+    mnist_train, mnist_val, mnist_test = get_digits_dataset(transform=transform_digits)
+    # Load the dataset
+    train_loader = torch.utils.data.DataLoader(mnist_train, batch_size=batch_size, num_workers=1, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(mnist_val, batch_size=batch_size, num_workers=1, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(mnist_test, batch_size=batch_size, num_workers=1, shuffle=True)
+    digits_dataset_total = len(mnist_train) + len(mnist_val) + len(mnist_test)
+    print("[DataProcessing] Complete")
+    print("----------Data Processing Report----------")
+    print(f"Digits dataset: training size ({len(mnist_train)} {len(mnist_train) / digits_dataset_total * 100:.2f}%) validation size ({len(mnist_val)} {len(mnist_val) / digits_dataset_total * 100:.2f}%) testing size ({len(mnist_test)} {len(mnist_test) / digits_dataset_total * 100:.2f}%)")
+    digits_label_mapping = dict(zip(range(0, 10), range(0, 10)))
+    print(f"Digits Label Mapping {digits_label_mapping}")
+    return train_loader, val_loader, test_loader
+
+def get_letters_dataset_loader(batch_size=64, transform_letters=transforms.Compose([transforms.ToTensor()])):
+    print(f"[DataProcessing][Letters] Initiate: batch size ({batch_size})")
+    print(f"[DataProcessing][Data Augmentation][Letters] ({transform_letters})")
+    print("[DataProcessing] Loading letters from EMNIST dataset")
+    emnist_train, emnist_val, emnist_test = get_all_letters_dataset(transform=transform_letters)
+    # Load the dataset
+    train_loader = torch.utils.data.DataLoader(emnist_train, batch_size=batch_size, num_workers=1, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(emnist_val, batch_size=batch_size, num_workers=1, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(emnist_test, batch_size=batch_size, num_workers=1, shuffle=True)
+    letters_dataset_total = len(emnist_train) + len(emnist_val) + len(emnist_test)
+    print("[DataProcessing] Complete")
+    print("----------Data Processing Report----------")
+    print(f"Letters dataset: training size ({len(emnist_train)} {len(emnist_train) / letters_dataset_total * 100:.2f}%) validation size ({len(emnist_val)} {len(emnist_val) / letters_dataset_total * 100:.2f}%) testing size ({len(emnist_test)} {len(emnist_test) / letters_dataset_total * 100:.2f}%)")
+    letters_label_mapping = dict(zip(list(string.ascii_uppercase), range(0, 26)))
+    print(f"Letters Label Mapping {letters_label_mapping}")
+    return train_loader, val_loader, test_loader
+
+def get_symbols_dataset_loader(batch_size=64, transform_symbols=transforms.Compose([transforms.ToTensor()])):
+    print(f"[DataProcessing][Symbols] Initiate: batch size ({batch_size})")
+    print(f"[DataProcessing][Data Augmentation][Symbols] ({transform_symbols})")
+    print("[DataProcessing] Loading symbols from Math Symbol dataset")
+    symbol_train, symbol_val, symbol_test = get_all_symbols_dataset(transform=transform_symbols)
+    # Load the dataset
+    train_loader = torch.utils.data.DataLoader(symbol_train, batch_size=batch_size, num_workers=1, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(symbol_val, batch_size=batch_size, num_workers=1, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(symbol_test, batch_size=batch_size, num_workers=1, shuffle=True)
+    symbols_dataset_total = len(symbol_train) + len(symbol_val) + len(symbol_test)
+    print("[DataProcessing] Complete")
+    print("----------Data Processing Report----------")
+    print(f"Symbols dataset: training size ({len(symbol_train)} {len(symbol_train) / symbols_dataset_total * 100:.2f}%) validation size ({len(symbol_val)} {len(symbol_val) / symbols_dataset_total * 100:.2f}%) testing size ({len(symbol_test)} {len(symbol_test) / symbols_dataset_total * 100:.2f}%)")
+    symbols_label_mapping = dict(zip(["add", "div", "eq", "lb", "rb", "sub"], range(0, 6)))
+    print(f"Symbols Label Mapping {symbols_label_mapping}")
+    return train_loader, val_loader, test_loader

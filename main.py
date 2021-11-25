@@ -102,9 +102,32 @@ if __name__ == "__main__":
     letters_augmentation.append(dataprocessor.DATA_AUGMENTATION["HORIZONTAL_FLIP"])
     letters_augmentation.append(dataprocessor.DATA_AUGMENTATION["RIGHT_ROTATION"])
     letters_augmentation.append(dataprocessor.DATA_AUGMENTATION["TO_TENSOR"])
-    train_loader, val_loader, test_loader = dataprocessor.get_dataset_loaders(1, True,
+    # dataprocessor.extract_dataset()
+    # train_loader, val_loader, test_loader = dataprocessor.get_all_dataset_loaders(1, True,
+    #                                                         transform_symbols=transforms.Compose(symbols_augmentation),
+    #                                                         transform_letters=transforms.Compose(letters_augmentation))
+    train_loader, val_loader, test_loader = dataprocessor.get_classify_dataset_loaders(64,
                                                             transform_symbols=transforms.Compose(symbols_augmentation),
                                                             transform_letters=transforms.Compose(letters_augmentation))
+    # train_loader, val_loader, test_loader = dataprocessor.get_digits_dataset_loader(1)
+    # train_loader, val_loader, test_loader = dataprocessor.get_letters_dataset_loader(1, transform_letters=transforms.Compose(letters_augmentation))
+    # train_loader, val_loader, test_loader = dataprocessor.get_symbols_dataset_loader(1, transform_symbols=transforms.Compose(symbols_augmentation))
+    # train_label = []
+    # for images, labels in iter(train_loader):
+    #     if int(labels) not in train_label:
+    #         train_label.append(int(labels))
+    # val_label = []
+    # for images, labels in iter(val_loader):
+    #     if int(labels) not in val_label:
+    #         val_label.append(int(labels))
+    # test_label = []
+    # for images, labels in iter(test_loader):
+    #     if int(labels) not in test_label:
+    #         test_label.append(int(labels))
+    # print(train_label)
+    # print(val_label)
+    # print(test_label)
+
     # get_data_stats(train_loader, val_loader, test_loader)
-    # train(simple_model, train_loader, val_loader, batch_size=64, learning_rate=0.01, num_epochs=6)
+    train(simple_model, train_loader, val_loader, batch_size=64, learning_rate=0.01, num_epochs=6)
 

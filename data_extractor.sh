@@ -3,8 +3,14 @@ rm -rf math_symbol_data
 unzip -qq './math_symbol_data.zip'
 
 mkdir math_symbol_data/training_dataset/
+mkdir math_symbol_data/training_dataset_rapper/
+mkdir math_symbol_data/training_dataset_rapper/all/
 mkdir math_symbol_data/validation_dataset/
+mkdir math_symbol_data/validation_dataset_rapper/
+mkdir math_symbol_data/validation_dataset_rapper/all/
 mkdir math_symbol_data/testing_dataset/
+mkdir math_symbol_data/testing_dataset_rapper/
+mkdir math_symbol_data/testing_dataset_rapper/all/
 
 declare -a symbols=("div" "eq" "lb" "rb" "add" "sub")
 for i in "${symbols[@]}"
@@ -41,10 +47,13 @@ do
     cur_data_num+=1
     if [ $cur_data_num -le $training_data_num ]; then
       cp "$file" "math_symbol_data/training_dataset/$i/"
+      cp "$file" "math_symbol_data/training_dataset_rapper/all/"
     elif [ $cur_data_num -le $validation_data_bound ]; then
       cp "$file" "math_symbol_data/validation_dataset/$i/"
+      cp "$file" "math_symbol_data/validation_dataset_rapper/all/"
     elif [ $cur_data_num -le $testing_data_bound ]; then
-      cp "$file" "math_symbol_data/testing_dataset/$i"
+      cp "$file" "math_symbol_data/testing_dataset/$i/"
+      cp "$file" "math_symbol_data/testing_dataset_rapper/all/"
     fi
   done
 done
